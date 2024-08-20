@@ -312,7 +312,7 @@ def save_image(img):
 def main():
     global img, image_height, image_width, input_file, output_dir, detected_corners
 
-    parser = argparse.ArgumentParser(description="Process an image file.")
+    parser = argparse.ArgumentParser(description="Quick scan cropping application")
     parser.add_argument("input_file", type=str, help="image file path", nargs="?")
     args = parser.parse_args()
 
