@@ -18,7 +18,9 @@ pip install opencv-python
 
 ## Usage
 
-1. On execution, you will be prompted for an input image.
+1. Launch `main.py`.
+
+2. On execution, you will be prompted for an input image.
 
 3. A preview of the selected scan will appear.
 
