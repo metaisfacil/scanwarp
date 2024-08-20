@@ -8,6 +8,8 @@ from pathlib import Path
 from tkinter import filedialog
 
 
+__version__ = "0.01.20240820"
+
 DEFAULT_DISPLAY_WIDTH = 800
 DEFAULT_DISPLAY_HEIGHT = 800
 DEFAULT_BLOCK_SIZE = 16
