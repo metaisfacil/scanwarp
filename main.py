@@ -13,7 +13,7 @@ DEFAULT_DISPLAY_HEIGHT = 800
 DEFAULT_BLOCK_SIZE = 16
 DEFAULT_APERTURE_SIZE = 25
 DEFAULT_K = 12
-DEFAULT_ACCENT_VALUE = 128
+DEFAULT_ACCENT_VALUE = 0
 
 circle_size = 3
 crop_top = 0
@@ -185,7 +185,7 @@ def detect_corners(img, block_size, ksize, k):
 def apply_accent_adjustment(img, accent_value, *args):
     """Apply accent adjustment to image."""
     adjusted = img.copy()
-    adjusted = np.clip(adjusted + (accent_value - 128), 0, 255).astype(np.uint8)
+    adjusted = np.clip(adjusted + accent_value, 0, 255).astype(np.uint8)
     return adjusted
 
 
@@ -361,7 +361,7 @@ def main():
     cv2.createTrackbar("Aperture", "Select four corners", DEFAULT_APERTURE_SIZE, 50, update)
     cv2.createTrackbar("K", "Select four corners", DEFAULT_K, 100, update)
     cv2.createTrackbar("Circles", "Select four corners", circle_size, 20, update)
-    cv2.createTrackbar("Accent", "Select four corners", DEFAULT_ACCENT_VALUE, 255, update)
+    cv2.createTrackbar("Accent", "Select four corners", DEFAULT_ACCENT_VALUE, 30, update)
     cv2.createTrackbar("Custom", "Select four corners", 0, 1, update)
 
     cv2.imshow("Select four corners", resized)
