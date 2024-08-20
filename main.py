@@ -13,7 +13,7 @@ DEFAULT_DISPLAY_HEIGHT = 800
 DEFAULT_BLOCK_SIZE = 16
 DEFAULT_APERTURE_SIZE = 25
 DEFAULT_K = 12
-DEFAULT_TONAL_VALUE = 128
+DEFAULT_ACCENT_VALUE = 128
 
 circle_size = 3
 crop_top = 0
@@ -182,10 +182,10 @@ def detect_corners(img, block_size, ksize, k):
     return detected_corners
 
 
-def apply_tonal_adjustment(img, tonal_value, *args):
-    """Apply tonal adjustment to image."""
+def apply_accent_adjustment(img, accent_value, *args):
+    """Apply accent adjustment to image."""
     adjusted = img.copy()
-    adjusted = np.clip(adjusted + (tonal_value - 128), 0, 255).astype(np.uint8)
+    adjusted = np.clip(adjusted + (accent_value - 128), 0, 255).astype(np.uint8)
     return adjusted
 
 
@@ -239,7 +239,7 @@ def update(*args):
     ksize = cv2.getTrackbarPos("Aperture", "Select four corners")
     k = cv2.getTrackbarPos("K", "Select four corners")
     circle_size = cv2.getTrackbarPos("Circles", "Select four corners")
-    tonal_value = cv2.getTrackbarPos("Accent", "Select four corners")
+    accent_value = cv2.getTrackbarPos("Accent", "Select four corners")
 
     if block_size % 2 == 0:
         block_size += 1
@@ -247,7 +247,7 @@ def update(*args):
         ksize += 1
 
     detected_corners = detect_corners(img, block_size, ksize, k)
-    tone_adjusted = apply_tonal_adjustment(img, tonal_value)
+    tone_adjusted = apply_accent_adjustment(img, accent_value)
     resized, dim = image_resize(tone_adjusted, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT)
     display_width, display_height = dim
 
@@ -351,7 +351,7 @@ def main():
     image_height, image_width = img.shape[:2]
 
     detected_corners = detect_corners(img, DEFAULT_BLOCK_SIZE, DEFAULT_APERTURE_SIZE, DEFAULT_K)
-    tone_adjusted = apply_tonal_adjustment(img, DEFAULT_TONAL_VALUE)
+    tone_adjusted = apply_accent_adjustment(img, DEFAULT_ACCENT_VALUE)
     resized, dim = image_resize(tone_adjusted, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT)
 
     cv2.namedWindow("Select four corners")
@@ -361,7 +361,7 @@ def main():
     cv2.createTrackbar("Aperture", "Select four corners", DEFAULT_APERTURE_SIZE, 50, update)
     cv2.createTrackbar("K", "Select four corners", DEFAULT_K, 100, update)
     cv2.createTrackbar("Circles", "Select four corners", circle_size, 20, update)
-    cv2.createTrackbar("Accent", "Select four corners", DEFAULT_TONAL_VALUE, 255, update)
+    cv2.createTrackbar("Accent", "Select four corners", DEFAULT_ACCENT_VALUE, 255, update)
     cv2.createTrackbar("Custom", "Select four corners", 0, 1, update)
 
     cv2.imshow("Select four corners", resized)
