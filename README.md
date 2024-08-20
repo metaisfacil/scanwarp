@@ -24,15 +24,16 @@ pip install opencv-python
 
 3. A preview of the selected scan will appear.
 
-   - Use the **mouse** to click on the corners of the insert you wish to crop.
+   - Use the **mouse** to click on the corners of the insert you wish to crop. Clicks will be snapped to the nearest detected corner.
    - Use the **trackbars** to adjust block size, aperture, `k` value for corner detection, circle sizes. Increasing `Accent` makes preview edges a little easier to see, however this does not influence corner detection.
-   - Disable corner detection by increasing `Custom`.
+   - If the script failed to automatically detect one or more corners, you can disable corner detection by increasing the `Custom` trackbar.
 
-4. Once the corners are selected, the image will be cropped and displayed. You can further crop or rotate the image using the following keys:
+4. Once all four corners are selected, the image will be cropped and displayed. You can further crop or rotate the image using the following keys:
    
    - **WASD**: Crop the image (Top/Bottom/Left/Right).
    - **E/R**: Rotate the image 90 degrees (CCW/CW).
    - **Q**: Save the final image.
+   - **Tab**: Undo last change.
 
 Please note Ctrl+S will save only the low-resolution preview. This is a hard-coded limitation of CV2 image previews.
 
