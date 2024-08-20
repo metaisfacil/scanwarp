@@ -1,3 +1,4 @@
+import argparse
 import cv2
 import io
 import numpy as np
@@ -311,14 +312,19 @@ def save_image(img):
 def main():
     global img, image_height, image_width, input_file, output_dir, detected_corners
 
-    input_file = filedialog.askopenfilename(
-        filetypes=[("Image files", "*.tif *.jpg *.png *.bmp *.jxl")]
-    )
+    parser = argparse.ArgumentParser(description="Process an image file.")
+    parser.add_argument("input_file", type=str, help="image file path", nargs="?")
+    args = parser.parse_args()
 
-    if not input_file:
+    if not args.input_file:
+        input_file = filedialog.askopenfilename(
+            filetypes=[("Image files", "*.tif *.jpg *.png *.bmp *.jxl")]
+        )
+
+    if not args.input_file:
         raise RuntimeError("no file selected")
 
-    input_file = Path(input_file)
+    input_file = Path(args.input_file)
     if input_file.suffix.lower() == ".jxl":
         ffmpeg_path = shutil.which("ffmpeg")    
         if ffmpeg_path is None:
