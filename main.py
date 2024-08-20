@@ -231,7 +231,7 @@ def crop_image(direction):
 
 
 def update(*args):
-    """Update display for image based on trackbar settings."""
+    """Update image display based on trackbar settings."""
     global img, circle_size, detected_corners, display_width, display_height
 
     block_size = cv2.getTrackbarPos("Block Size", "Select four corners")
@@ -275,6 +275,7 @@ def update(*args):
 
 
 def save_image(img):
+    """Save image as file."""
     global input_file
 
     unique_path = get_unique_path(input_file.parent / input_file.stem)
@@ -380,7 +381,7 @@ def main():
             crop_image("left")
         elif key == ord("d"):  # Crop right
             crop_image("right")
-        elif key == ord("q"): # Q to save
+        elif key == ord("q"):  # Q to save
             save_image(warped)
 
     cv2.destroyAllWindows()
