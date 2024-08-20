@@ -40,6 +40,10 @@ Please note Ctrl+S will save only the low-resolution preview. This is a hard-cod
 
 - `.jxl` images require FFmpeg for conversion. Ensure FFmpeg is installed and accessible via PATH.
 
+## Contributing
+
+Pull requests welcome.
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0. See the [LICENSE](LICENSE) file for details.
