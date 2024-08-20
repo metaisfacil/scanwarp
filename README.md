@@ -28,7 +28,7 @@ pip install opencv-python
    - Use the **trackbars** to adjust block size, aperture, `k` value for corner detection, circle sizes, and tonal value.
    - Disable corner detection by increasing `Custom`.
 
-4. **Cropping & Rotating**: Once the corners are selected, the image will be cropped and displayed. You can further crop or rotate the image using the following keys:
+4. Once the corners are selected, the image will be cropped and displayed. You can further crop or rotate the image using the following keys:
    
    - **WASD**: Crop the image (Top/Bottom/Left/Right).
    - **E/R**: Rotate the image 90 degrees (CCW/CW).
