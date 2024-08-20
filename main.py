@@ -316,15 +316,16 @@ def main():
     parser.add_argument("input_file", type=str, help="image file path", nargs="?")
     args = parser.parse_args()
 
-    if not args.input_file:
+    input_file = args.input_file
+    if not input_file:
         input_file = filedialog.askopenfilename(
             filetypes=[("Image files", "*.tif *.jpg *.png *.bmp *.jxl")]
         )
 
-    if not args.input_file:
+    if not args.input_file and not input_file:
         raise RuntimeError("no file selected")
 
-    input_file = Path(args.input_file)
+    input_file = Path(input_file)
     if input_file.suffix.lower() == ".jxl":
         ffmpeg_path = shutil.which("ffmpeg")    
         if ffmpeg_path is None:
