@@ -26,6 +26,7 @@ detected_corners = []
 selected_corners = []
 display_width = DEFAULT_DISPLAY_WIDTH
 display_height = DEFAULT_DISPLAY_HEIGHT
+undo_state = None
 
 
 def get_unique_path(path: Path) -> Path:
@@ -193,7 +194,9 @@ def apply_accent_adjustment(img, accent_value, *args):
 
 def rotate_image(flip_code):
     """Rotate image by 90 degrees and display."""
-    global warped, display_width, display_height
+    global warped, last_state, display_width, display_height
+
+    last_state = warped
 
     rotated = cv2.transpose(warped)
     rotated = cv2.flip(rotated, flipCode=flip_code)
@@ -208,7 +211,9 @@ def rotate_image(flip_code):
 
 def crop_image(direction):
     """Crop image by one row/column of pixels and display."""
-    global warped, crop_top, crop_bottom, crop_left, crop_right, display_width, display_height
+    global warped, last_state, crop_top, crop_bottom, crop_left, crop_right, display_width, display_height
+
+    last_state = warped
 
     if direction == "top":
         if crop_top < warped.shape[0] - 1:
@@ -229,6 +234,21 @@ def crop_image(direction):
 
     resized, dim = image_resize(warped, width=DEFAULT_DISPLAY_WIDTH, height=DEFAULT_DISPLAY_HEIGHT)
     display_width, display_height = dim
+
+    cv2.imshow("Cropped image", resized)
+
+
+def undo_image(*args):
+    """Revert image to last state."""
+    global warped, last_state
+
+    if last_state is None:
+        return
+    
+    warped = last_state
+    last_state = None
+
+    resized, dim = image_resize(warped, width=DEFAULT_DISPLAY_WIDTH, height=DEFAULT_DISPLAY_HEIGHT)
 
     cv2.imshow("Cropped image", resized)
 
@@ -392,6 +412,8 @@ def main():
             crop_image("right")
         elif key == ord("q"):  # Q to save
             save_image(warped)
+        elif key == 9:  # Tab to undo
+            undo_image()
 
     cv2.destroyAllWindows()
 
