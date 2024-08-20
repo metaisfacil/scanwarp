@@ -39,7 +39,6 @@ Please note Ctrl+S will save only the low-resolution preview. This is a hard-cod
 ## Notes
 
 - `.jxl` images require FFmpeg for conversion. Ensure FFmpeg is installed and accessible via PATH.
-- The script provides a unique filename for saving the image to prevent overwriting.
 
 ## License
 
