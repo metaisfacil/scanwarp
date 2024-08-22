@@ -189,7 +189,7 @@ def detect_corners(img, block_size, ksize, k):
 def apply_accent_adjustment(img, accent_value, *args):
     """Apply accent adjustment to image."""
     adjusted = img.copy()
-    adjusted = np.clip(adjusted + accent_value, 0, 255).astype(np.uint8)
+    adjusted = np.clip(abs(adjusted + accent_value), 0, 255).astype(np.uint8)
     return adjusted
 
 
@@ -383,7 +383,7 @@ def main():
     cv2.setWindowProperty("Select four corners", cv2.WND_PROP_TOPMOST, 1)
 
     cv2.createTrackbar("Block Size", "Select four corners", DEFAULT_BLOCK_SIZE, 50, update)
-    cv2.createTrackbar("Aperture", "Select four corners", DEFAULT_APERTURE_SIZE, 50, update)
+    cv2.createTrackbar("Aperture", "Select four corners", DEFAULT_APERTURE_SIZE, 31, update)
     cv2.createTrackbar("K", "Select four corners", DEFAULT_K, 100, update)
     cv2.createTrackbar("Circles", "Select four corners", circle_size, 20, update)
     cv2.createTrackbar("Accent", "Select four corners", DEFAULT_ACCENT_VALUE, 30, update)
