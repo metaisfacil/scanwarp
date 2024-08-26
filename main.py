@@ -312,6 +312,7 @@ def save_image(img):
             ("JPEG files", "*.jpg *.jpeg"),
             ("All files", "*.*"),
         ],
+        initialdir=unique_path.parent,
         initialfile=unique_path.name,
     )
     
