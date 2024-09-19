@@ -10,11 +10,12 @@ from tkinter import filedialog
 
 __version__ = "0.014.20240825"
 
-DEFAULT_DISPLAY_WIDTH = 800
-DEFAULT_DISPLAY_HEIGHT = 800
+DEFAULT_DISPLAY_WIDTH = 700
+DEFAULT_DISPLAY_HEIGHT = 700
 DEFAULT_BLOCK_SIZE = 16
-DEFAULT_APERTURE_SIZE = 25
-DEFAULT_K = 12
+DEFAULT_MAX_CORNERS = 1000
+DEFAULT_QUALITY_LEVEL = 16
+DEFAULT_MIN_DISTANCE = 56
 DEFAULT_ACCENT_VALUE = 0
 UNDO_LIMIT = 10
 
@@ -168,21 +169,26 @@ def unwarp_image(img, src_points, dst_points):
     return warped
 
 
-def detect_corners(img, block_size, ksize, k):
-    """Detect corners on given `img`."""
+def detect_corners(img, max_corners, quality_level, min_distance):
+    """Detect corners on given `img` using Shi-Tomasi corner detection."""
     global detected_corners
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = np.float32(gray)
-    dst = cv2.cornerHarris(gray, block_size, ksize, k / 100.0)
 
-    ret, dst = cv2.threshold(dst, 0.001 * dst.max(), 255, 0)
-    dst = np.uint8(dst)
+    corners = cv2.goodFeaturesToTrack(
+        gray,
+        maxCorners=max_corners,
+        qualityLevel=quality_level / 100.0,
+        minDistance=min_distance,
+        blockSize=DEFAULT_BLOCK_SIZE
+    )
 
-    ret, labels, stats, centroids = cv2.connectedComponentsWithStats(dst)
-    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.001)
+    if corners is not None:
+        detected_corners = np.int0(corners).reshape(-1, 2)
+    else:
+        detected_corners = []
 
-    detected_corners = cv2.cornerSubPix(gray, np.float32(centroids), (5, 5), (-1, -1), criteria)
     return detected_corners
 
 
@@ -260,18 +266,16 @@ def update(*args):
     """Update image display based on trackbar settings."""
     global img, circle_size, detected_corners, display_width, display_height
 
-    block_size = cv2.getTrackbarPos("Block Size", "Select four corners")
-    ksize = cv2.getTrackbarPos("Aperture", "Select four corners")
-    k = cv2.getTrackbarPos("K", "Select four corners")
+    max_corners = cv2.getTrackbarPos("Max Corners", "Select four corners")
+    quality_level = cv2.getTrackbarPos("Quality Level", "Select four corners")
+    min_distance = cv2.getTrackbarPos("Min Distance", "Select four corners")
     circle_size = cv2.getTrackbarPos("Circles", "Select four corners")
     accent_value = cv2.getTrackbarPos("Accent", "Select four corners")
 
-    if block_size % 2 == 0:
-        block_size += 1
-    if ksize % 2 == 0:
-        ksize += 1
+    if max_corners == 0:
+        max_corners = 1  # Ensure at least 1 corner is detected
 
-    detected_corners = detect_corners(img, block_size, ksize, k)
+    detected_corners = detect_corners(img, max_corners, quality_level, min_distance)
     tone_adjusted = apply_accent_adjustment(img, accent_value)
     resized, dim = image_resize(tone_adjusted, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT)
     display_width, display_height = dim
@@ -376,19 +380,20 @@ def main():
 
     image_height, image_width = img.shape[:2]
 
-    detected_corners = detect_corners(img, DEFAULT_BLOCK_SIZE, DEFAULT_APERTURE_SIZE, DEFAULT_K)
+    detected_corners = detect_corners(img, DEFAULT_MAX_CORNERS, DEFAULT_QUALITY_LEVEL, DEFAULT_MIN_DISTANCE)
     tone_adjusted = apply_accent_adjustment(img, DEFAULT_ACCENT_VALUE)
     resized, dim = image_resize(tone_adjusted, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT)
 
     cv2.namedWindow("Select four corners")
     cv2.setWindowProperty("Select four corners", cv2.WND_PROP_TOPMOST, 1)
 
-    cv2.createTrackbar("Block Size", "Select four corners", DEFAULT_BLOCK_SIZE, 50, update)
-    cv2.createTrackbar("Aperture", "Select four corners", DEFAULT_APERTURE_SIZE, 31, update)
-    cv2.createTrackbar("K", "Select four corners", DEFAULT_K, 100, update)
+    cv2.createTrackbar("Max Corners", "Select four corners", DEFAULT_MAX_CORNERS, 1000, update)
+    cv2.createTrackbar("Quality Level", "Select four corners", DEFAULT_QUALITY_LEVEL, 100, update)
+    cv2.createTrackbar("Min Distance", "Select four corners", DEFAULT_MIN_DISTANCE, 200, update)
     cv2.createTrackbar("Circles", "Select four corners", circle_size, 20, update)
     cv2.createTrackbar("Accent", "Select four corners", DEFAULT_ACCENT_VALUE, 30, update)
     cv2.createTrackbar("Custom", "Select four corners", 0, 1, update)
+
 
     cv2.imshow("Select four corners", resized)
     cv2.setMouseCallback("Select four corners", click_handler)
