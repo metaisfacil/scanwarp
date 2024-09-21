@@ -275,6 +275,9 @@ def update(*args):
     if max_corners == 0:
         max_corners = 1  # Ensure at least 1 corner is detected
 
+    if quality_level == 0:
+        quality_level == 1  # A quality level of 0 is invalid
+
     detected_corners = detect_corners(img, max_corners, quality_level, min_distance)
     tone_adjusted = apply_accent_adjustment(img, accent_value)
     resized, dim = image_resize(tone_adjusted, DEFAULT_DISPLAY_WIDTH, DEFAULT_DISPLAY_HEIGHT)
