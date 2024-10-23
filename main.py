@@ -185,7 +185,7 @@ def detect_corners(img, max_corners, quality_level, min_distance):
     )
 
     if corners is not None:
-        detected_corners = np.int0(corners).reshape(-1, 2)
+        detected_corners = np.int32(corners).reshape(-1, 2)
     else:
         detected_corners = []
 
