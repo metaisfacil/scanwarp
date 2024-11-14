@@ -17,6 +17,7 @@ DEFAULT_MAX_CORNERS = 1000
 DEFAULT_QUALITY_LEVEL = 1
 DEFAULT_MIN_DISTANCE = 100
 DEFAULT_ACCENT_VALUE = 0
+DEFAULT_SCALE = 4
 UNDO_LIMIT = 10
 
 circle_size = 3
@@ -173,19 +174,31 @@ def detect_corners(img, max_corners, quality_level, min_distance):
     """Detect corners on given `img` using Shi-Tomasi corner detection."""
     global detected_corners
 
+    try:
+        accent_value = cv2.getTrackbarPos("Accent", "Select four corners")
+    except:
+        accent_value = DEFAULT_ACCENT_VALUE
+    img = apply_accent_adjustment(img, accent_value)
+
+    scale = DEFAULT_SCALE
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     gray = np.float32(gray)
+    gray_h, gray_w = gray.shape[:2]
+    gray_resize = cv2.resize(gray, (gray_w // scale, gray_h // scale), interpolation=cv2.INTER_AREA)
 
+    # Detect corners on the resized image
     corners = cv2.goodFeaturesToTrack(
-        gray,
+        gray_resize,
         maxCorners=max_corners,
         qualityLevel=quality_level / 100.0,
-        minDistance=min_distance,
+        minDistance=min_distance // scale,
         blockSize=DEFAULT_BLOCK_SIZE
     )
 
     if corners is not None:
-        detected_corners = np.int32(corners).reshape(-1, 2)
+        # Scale corners back to the original size
+        scaled_corners = (corners * scale).reshape(-1, 2)
+        detected_corners = np.int32(scaled_corners)
     else:
         detected_corners = []
 
