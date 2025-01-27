@@ -7,11 +7,13 @@ import subprocess
 from pathlib import Path
 from tkinter import filedialog
 
+background_color = (255, 255, 255)
 crop = None
 crop_ready = False
 drawing = False
 drawing_complete = False
 feathered_full_res_crop = None
+hover_pos = (0, 0)
 resize_factor = 8
 rotated_crop = None
 rotation_angle = 0
@@ -19,42 +21,50 @@ start_point = (0, 0)
 
 
 def rotate_image(image, angle):
+    global background_color
+
+    # Get image dimensions
     (h, w) = image.shape[:2]
     center = (w // 2, h // 2)
 
+    # Create rotation matrix
     M = cv2.getRotationMatrix2D(center, angle, 1.0)
 
+    # Perform affine transformation with the current background color
     rotated = cv2.warpAffine(
         image,
         M,
         (w, h),
         flags=cv2.INTER_LINEAR,
         borderMode=cv2.BORDER_CONSTANT,
-        borderValue=(255, 255, 255),
+        borderValue=background_color,  # Use the global background color
     )
     return rotated
 
 
 def apply_circular_mask_with_feather(crop, center, radius, feather_size=15):
-    h, w = crop.shape[:2]
-    white_background = np.full((h, w, 3), 255, dtype=np.uint8)
+    global background_color  # Use the current background color
 
+    h, w = crop.shape[:2]
+    background = np.full((h, w, 3), background_color, dtype=np.uint8)
+    
     mask = np.zeros((h, w), dtype=np.uint8)
     cv2.circle(mask, center, radius, 255, -1)
 
-    mask = cv2.GaussianBlur(
-        mask, (2 * feather_size + 1, 2 * feather_size + 1), feather_size
-    )
+    mask = cv2.GaussianBlur(mask, (2 * feather_size + 1, 2 * feather_size + 1), feather_size)
+    
     alpha = mask.astype(float) / 255.0
 
-    feathered_crop = (
-        crop * alpha[..., None] + white_background * (1 - alpha[..., None])
-    ).astype(np.uint8)
+    feathered_crop = (crop * alpha[..., None] + background * (1 - alpha[..., None])).astype(np.uint8)
     return feathered_crop
 
 
 def draw_circle(event, x, y, flags, param):
-    global img_resized, img, temp_img, drawing, start_point, crop_ready, crop, rotated_crop, rotation_angle, full_res_crop, feathered_full_res_crop, drawing_complete
+    global crop, crop_ready, drawing, drawing_complete, feathered_full_res_crop
+    global full_res_center, full_res_crop, img_resized, img, orig_radius
+    global rotation_angle, rotated_crop, start_point, temp_img, hover_pos
+
+    hover_pos = (x, y)  # Update the hover position
 
     if event == cv2.EVENT_LBUTTONDOWN:
         drawing = True
@@ -105,8 +115,14 @@ def draw_circle(event, x, y, flags, param):
 
 
 def update_rotate():
-    global feathered_full_res_crop, resize_factor, resized_rotated_crop, rotated_crop, rotation_angle
+    global feathered_full_res_crop, full_res_crop, full_res_center, orig_radius, resize_factor, resized_rotated_crop, rotated_crop, rotation_angle, background_color
+
+    feathered_full_res_crop = apply_circular_mask_with_feather(
+        full_res_crop, full_res_center, orig_radius, feather_size=15
+    )
+
     rotated_crop = rotate_image(feathered_full_res_crop, rotation_angle)
+
     resized_rotated_crop = cv2.resize(
         rotated_crop,
         (
@@ -115,6 +131,7 @@ def update_rotate():
         ),
         interpolation=cv2.INTER_AREA,
     )
+
     cv2.imshow("Cropped image", resized_rotated_crop)
 
 
@@ -172,9 +189,9 @@ def save_image(img):
 
 
 def main():
-    global crop_ready, detected_corners, img, img_resized, image_height, image_width, input_file, output_dir, rotation_angle, temp_img
+    global background_color, crop_ready, detected_corners, full_res_center, img, img_resized, image_height, image_width, input_file, output_dir, orig_radius, rotated_crop, rotation_angle, temp_img
 
-    parser = argparse.ArgumentParser(description="Quick scan cropping application")
+    parser = argparse.ArgumentParser(description="Quick disc cropping application")
     parser.add_argument("input_file", type=str, help="image file path", nargs="?")
     args = parser.parse_args()
 
@@ -236,18 +253,27 @@ def main():
         if key == 27:  # ESC to exit
             break
         elif crop_ready:
-            if key == ord("w"):  # W to rotate -45°
-                rotation_angle -= 45
-                update_rotate()
-            elif key == ord("e"):  # E to rotate -1°
-                rotation_angle -= 1
-                update_rotate()
-            elif key == ord("r"):  # R to rotate 1°
-                rotation_angle += 1
-                update_rotate()
-            elif key == ord("t"):  # T to rotate 45°
+            if key == ord("w"):  # W to rotate 45°
                 rotation_angle += 45
                 update_rotate()
+            elif key == ord("e"):  # E to rotate -1°
+                rotation_angle += 1
+                update_rotate()
+            elif key == ord("r"):  # R to rotate 1°
+                rotation_angle -= 1
+                update_rotate()
+            elif key == ord("t"):  # T to rotate -45°
+                rotation_angle -= 45
+                update_rotate()
+            elif key == ord("y"):  # Y to set the background to the hovered pixel color
+                if 0 <= hover_pos[1] < img_resized.shape[0] and 0 <= hover_pos[0] < img_resized.shape[1]:
+                    pixel_color = img_resized[hover_pos[1], hover_pos[0]]
+                    background_color = tuple(map(int, pixel_color))
+                    feathered_full_res_crop = apply_circular_mask_with_feather(
+                        full_res_crop, full_res_center, orig_radius, feather_size=15
+                    )
+                    rotated_crop = feathered_full_res_crop
+                    update_rotate()
             elif key == ord("q"):  # Q to save
                 save_image(rotated_crop)
                 crop_ready = False
